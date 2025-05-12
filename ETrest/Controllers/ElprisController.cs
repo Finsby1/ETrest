@@ -1,4 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
+using System.Net.Http;
+using System.Threading.Tasks;
+using System.Collections.Generic;
+using Newtonsoft.Json;
+using ETrest.Models;
 
 namespace ETrest.Controllers
 {
@@ -6,13 +11,27 @@ namespace ETrest.Controllers
     [ApiController]
     public class ElprisController : ControllerBase
     {
-        private static readonly List<double> Elpriser = new()
+        private static readonly HttpClient client = new HttpClient();
+        private const string URL = "https://www.elprisenligenu.dk/api/v1/prices/2025/05-12_DK2.json";
+        private List<double> Elpriser = new List<double>();
+
+        
+        
+        [HttpGet]
+        public async Task<IActionResult> GetAllItems()
         {
-            0.75, 0.65, 0.82, 1.10, 1.55, 1.30, 0.90,
-            0.78, 0.69, 0.60, 1.40, 1.25, 0.95, 0.88,
-            1.10, 1.35, 1.60, 1.20, 1.00, 0.85, 0.70,
-            0.65, 0.80, 0.90
-        };
+            HttpResponseMessage response = await client.GetAsync(URL);
+
+            if (response.IsSuccessStatusCode)
+            {
+                string json = await response.Content.ReadAsStringAsync();
+                return Content(json, "application/json");
+            }
+            else
+            {
+                return StatusCode((int)response.StatusCode, "Error retrieving data");
+            }
+        }
 
         [HttpGet("{id}")]
         public IActionResult GetPrisById(int id)
