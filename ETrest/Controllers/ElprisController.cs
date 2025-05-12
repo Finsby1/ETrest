@@ -2,8 +2,9 @@ using Microsoft.AspNetCore.Mvc;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using ETlib;
+using ETlib.Repository;
 using Newtonsoft.Json;
-using ETrest.Models;
 
 namespace ETrest.Controllers
 {
@@ -11,6 +12,14 @@ namespace ETrest.Controllers
     [ApiController]
     public class ElprisController : ControllerBase
     {
+
+        private EnergyPriceRepository _repo;
+
+        public ElprisController(EnergyPriceRepository repo)
+        {
+            _repo = repo;
+        }
+        
         private static readonly HttpClient client = new HttpClient();
         private List<double> Elpriser = new List<double>();
 
@@ -27,79 +36,70 @@ namespace ETrest.Controllers
         }
  
         
-        
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [HttpGet("Vest")]
-        public async Task<IActionResult> GetAllItemsVest()
+        public async Task<ActionResult<IEnumerable<EnergyPrice>>> GetAllItemsVest()
         {
-            string url = GetUrlForToday("DK1"); // <-- dynamisk URL
-            HttpResponseMessage response = await client.GetAsync(url);
+            HttpResponseMessage response = await client.GetAsync(GetUrlForToday("DK1"));
+            try
+            {
+                IEnumerable<EnergyPrice>? list = await response.Content.ReadFromJsonAsync<IEnumerable<EnergyPrice>>();
 
-            if (response.IsSuccessStatusCode)
-            {
-                string jsonDK1 = await response.Content.ReadAsStringAsync();
-                return Content(jsonDK1, "application/json");
+                if (list.Count() > 0)
+                {
+                    foreach (EnergyPrice ep in list)
+                    {
+                        _repo.Add(ep, 1);
+                    }
+                }
+                return Ok(list);
             }
-            else
+            catch (Exception e)
             {
-                return StatusCode((int)response.StatusCode, "Error retrieving data");
+                return BadRequest(e.Message);
             }
             
         }   
         
         [HttpGet("Øst")]
         
-        public async Task<IActionResult> GetAllItemsØSt()
+        public async Task<ActionResult<IEnumerable<EnergyPrice>>> GetAllItemsØSt()
         {
-            string url = GetUrlForToday("DK2"); // <-- dynamisk URL
-            HttpResponseMessage response = await client.GetAsync(url);
+            HttpResponseMessage response = await client.GetAsync(GetUrlForToday("DK2"));
+            try
+            {
+                IEnumerable<EnergyPrice>? list = await response.Content.ReadFromJsonAsync<IEnumerable<EnergyPrice>>();
 
-            if (response.IsSuccessStatusCode)
-            {
-                string jsonDK2 = await response.Content.ReadAsStringAsync();
-                return Content(jsonDK2, "application/json");
+                if (list.Count() > 0)
+                {
+                    foreach (EnergyPrice ep in list)
+                    {
+                        _repo.Add(ep, 2);
+                    }
+                }
+                return Ok(list);
             }
-            else
+            catch (Exception e)
             {
-                return StatusCode((int)response.StatusCode, "Error retrieving data");
+                return BadRequest(e.Message);
             }
-            
         }   
         
 
         [HttpGet("{id}")]
         public IActionResult GetPrisById(int id)
         {
-            return GetPrisByTime(id);
+            return null;
         }
-
-        [HttpPost]
-        public IActionResult Post([FromBody] double nyPris)
+        
+        [HttpGet]
+        public ActionResult<IEnumerable<EnergyPrice>> Get()
         {
-            if (nyPris < 0 || nyPris > 10)
-                return BadRequest("Pris skal være mellem 0 og 10");
-
-            Elpriser.Add(nyPris);
-            return Ok(new { besked = "Pris tilføjet", nyPris, indeks = Elpriser.Count - 1 });
+            return _repo.GetEnergyPricesWest().ToList();
         }
-
-        private IActionResult GetPrisByTime(int time)
-        {
-            if (time < 0 || time >= Elpriser.Count)
-                return NotFound("Ingen pris tilgængelig for time " + time);
-
-            double pris = Elpriser[time];
-            string tidspunkt = $"{time}:00";
-            string vurdering = VurderPris(pris);
-
-            return Ok(new[] { tidspunkt, vurdering });
-        }
-
-        private string VurderPris(double pris)
-        {
-            if (pris < 0.80) return "Lav";
-            if (pris < 1.20) return "Middel";
-            return "Høj";
-        }
+        
+        
     }
 }
 

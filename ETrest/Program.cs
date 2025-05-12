@@ -1,3 +1,5 @@
+using ETlib.Repository;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services
@@ -14,6 +16,9 @@ builder.Services.AddCors(options =>
             .AllowAnyHeader();
     });
 });
+
+
+builder.Services.AddSingleton<EnergyPriceRepository>(new EnergyPriceRepository());
 
 var app = builder.Build();
 
