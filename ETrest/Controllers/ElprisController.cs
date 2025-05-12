@@ -12,26 +12,59 @@ namespace ETrest.Controllers
     public class ElprisController : ControllerBase
     {
         private static readonly HttpClient client = new HttpClient();
-        private const string URL = "https://www.elprisenligenu.dk/api/v1/prices/2025/05-12_DK2.json";
         private List<double> Elpriser = new List<double>();
 
-        
-        
-        [HttpGet]
-        public async Task<IActionResult> GetAllItems()
+        private string GetUrlForToday(string _region)
         {
-            HttpResponseMessage response = await client.GetAsync(URL);
+            var today = DateTime.Now;
+            string year = today.Year.ToString();
+            string month = today.Month.ToString("D2"); // to cifre, fx "05"
+            string day = today.Day.ToString("D2");     // to cifre, fx "12"
+            string region = _region; // Eller "DK1" hvis du vil ændre det
+            
+
+            return $"https://www.elprisenligenu.dk/api/v1/prices/{year}/{month}-{day}_{region}.json";
+        }
+ 
+        
+        
+        [HttpGet("Vest")]
+        public async Task<IActionResult> GetAllItemsVest()
+        {
+            string url = GetUrlForToday("DK1"); // <-- dynamisk URL
+            HttpResponseMessage response = await client.GetAsync(url);
 
             if (response.IsSuccessStatusCode)
             {
-                string json = await response.Content.ReadAsStringAsync();
-                return Content(json, "application/json");
+                string jsonDK1 = await response.Content.ReadAsStringAsync();
+                return Content(jsonDK1, "application/json");
             }
             else
             {
                 return StatusCode((int)response.StatusCode, "Error retrieving data");
             }
-        }
+            
+        }   
+        
+        [HttpGet("Øst")]
+        
+        public async Task<IActionResult> GetAllItemsØSt()
+        {
+            string url = GetUrlForToday("DK2"); // <-- dynamisk URL
+            HttpResponseMessage response = await client.GetAsync(url);
+
+            if (response.IsSuccessStatusCode)
+            {
+                string jsonDK2 = await response.Content.ReadAsStringAsync();
+                return Content(jsonDK2, "application/json");
+            }
+            else
+            {
+                return StatusCode((int)response.StatusCode, "Error retrieving data");
+            }
+            
+        }   
+        
 
         [HttpGet("{id}")]
         public IActionResult GetPrisById(int id)
