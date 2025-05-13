@@ -38,20 +38,45 @@ namespace ETrest.Controllers
         
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [HttpGet("Vest")]
-        public async Task<ActionResult<IEnumerable<EnergyPrice>>> GetAllItemsVest()
+        [HttpGet("fromAPI/{zone}")]
+        public async Task<ActionResult<IEnumerable<EnergyPrice>>> GetAllItems(string zone)
         {
-            HttpResponseMessage response = await client.GetAsync(GetUrlForToday("DK1"));
+            HttpResponseMessage response;
+            if (zone == "Vest")
+            {
+                response = await client.GetAsync(GetUrlForToday("DK1"));
+            }
+            else if (zone == "Øst")
+            {
+                response = await client.GetAsync(GetUrlForToday("DK2")); 
+            }
+            else
+            {
+                response = null;
+                return BadRequest("Invalid zone");
+            }
+            
             try
             {
                 IEnumerable<EnergyPrice>? list = await response.Content.ReadFromJsonAsync<IEnumerable<EnergyPrice>>();
 
-                if (list.Count() > 0)
+                if (list.Count() > 0 && zone == "Vest")
                 {
                     foreach (EnergyPrice ep in list)
                     {
                         _repo.Add(ep, 1);
                     }
+                }
+                else if (list.Count() > 0 && zone == "Øst")
+                {
+                    foreach (EnergyPrice ep in list)
+                    {
+                        _repo.Add(ep, 2);
+                    }
+                }
+                else
+                {
+                    return BadRequest("Invalid zone");
                 }
                 return Ok(list);
             }
@@ -62,41 +87,57 @@ namespace ETrest.Controllers
             
         }   
         
-        [HttpGet("Øst")]
-        
-        public async Task<ActionResult<IEnumerable<EnergyPrice>>> GetAllItemsØSt()
+
+
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [HttpGet("{zone}/{hour}")]
+        public ActionResult<EnergyPrice> GetPrisById(int hour, string zone)
         {
-            HttpResponseMessage response = await client.GetAsync(GetUrlForToday("DK2"));
             try
             {
-                IEnumerable<EnergyPrice>? list = await response.Content.ReadFromJsonAsync<IEnumerable<EnergyPrice>>();
-
-                if (list.Count() > 0)
+                EnergyPrice ep;
+                if (zone == "Vest")
                 {
-                    foreach (EnergyPrice ep in list)
+                    ep = _repo.GetByHour(hour, 1);
+                    if (ep != null)
                     {
-                        _repo.Add(ep, 2);
+                        return Ok(ep);
                     }
                 }
-                return Ok(list);
+                else if (zone == "Øst")
+                {
+                    ep = _repo.GetByHour(hour, 2);
+                    if (ep != null)
+                    {
+                        return Ok(ep);
+                    }
+                }
             }
             catch (Exception e)
             {
                 return BadRequest(e.Message);
             }
-        }   
-        
 
-        [HttpGet("{id}")]
-        public IActionResult GetPrisById(int id)
-        {
-            return null;
+            return BadRequest();
         }
         
-        [HttpGet]
-        public ActionResult<IEnumerable<EnergyPrice>> Get()
+        [HttpGet("All/{zone}")]
+        public ActionResult<IEnumerable<EnergyPrice>> Get(string zone)
         {
-            return _repo.GetEnergyPricesWest().ToList();
+            if(zone == "Vest")
+            {
+                return _repo.GetSavedPrices(1).ToList();
+            }
+            else if (zone == "Øst")
+            {
+                return _repo.GetSavedPrices(2).ToList();
+            }
+            else
+            {
+                return BadRequest("Invalid zone");
+            }
+            
         }
         
         
