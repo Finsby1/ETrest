@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
@@ -7,8 +7,16 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <Compile Remove="FakesAssemblies\**" />
+      <Content Remove="FakesAssemblies\**" />
+      <EmbeddedResource Remove="FakesAssemblies\**" />
+      <None Remove="FakesAssemblies\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.QualityTools.Testing.Fakes" Version="17.5.0-beta.23060.1" />
         <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.7" />
-        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2"/>
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
     </ItemGroup>
 
     <ItemGroup>
@@ -16,8 +24,12 @@
     </ItemGroup>
 
     <ItemGroup>
+      <AdditionalDesignTimeBuildInput Remove="FakesAssemblies\**" />
+    </ItemGroup>
+
+    <ItemGroup>
       <Reference Include="ETlib">
-        <HintPath>..\..\..\ETlib\ETlib\ETlib\bin\Debug\net8.0\ETlib.dll</HintPath>
+        <HintPath>..\..\Library\ETlib\bin\Debug\net8.0\ETlib.dll</HintPath>
       </Reference>
     </ItemGroup>
 

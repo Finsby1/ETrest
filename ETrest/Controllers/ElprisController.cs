@@ -7,8 +7,7 @@ using ETlib.Repository;
 using Newtonsoft.Json;
 
 namespace ETrest.Controllers
-{
-    [Route("api/[controller]")]
+{    [Route("api/[controller]")]
     [ApiController]
     public class ElprisController : ControllerBase
     {
@@ -21,7 +20,6 @@ namespace ETrest.Controllers
         }
         
         private static readonly HttpClient client = new HttpClient();
-        private List<double> Elpriser = new List<double>();
 
         private string GetUrlForToday(string _region)
         {
@@ -38,47 +36,39 @@ namespace ETrest.Controllers
         
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [HttpGet("fromAPI/{zone}")]
-        public async Task<ActionResult<IEnumerable<EnergyPrice>>> GetAllItems(string zone)
+        [HttpGet("FromAPI")]
+        public async Task<ActionResult<IEnumerable<EnergyPrice>>> GetAllItems()
         {
-            HttpResponseMessage response;
-            if (zone == "Vest")
-            {
-                response = await client.GetAsync(GetUrlForToday("DK1"));
-            }
-            else if (zone == "Øst")
-            {
-                response = await client.GetAsync(GetUrlForToday("DK2")); 
-            }
-            else
-            {
-                response = null;
-                return BadRequest("Invalid zone");
-            }
+            _repo.restart();
+            HttpResponseMessage West;
+            HttpResponseMessage East;
+
+            West = await client.GetAsync(GetUrlForToday("DK1"));
+            East = await client.GetAsync(GetUrlForToday("DK2")); 
             
             try
             {
-                IEnumerable<EnergyPrice>? list = await response.Content.ReadFromJsonAsync<IEnumerable<EnergyPrice>>();
-
-                if (list.Count() > 0 && zone == "Vest")
+                IEnumerable<EnergyPrice>? WestList = await West.Content.ReadFromJsonAsync<IEnumerable<EnergyPrice>>();
+                IEnumerable<EnergyPrice>? EastList = await East.Content.ReadFromJsonAsync<IEnumerable<EnergyPrice>>();
+                if (WestList.Count() > 0)
                 {
-                    foreach (EnergyPrice ep in list)
+                    foreach (EnergyPrice epWest in WestList)
                     {
-                        _repo.Add(ep, 1);
+                        _repo.Add(epWest, 1);
                     }
                 }
-                else if (list.Count() > 0 && zone == "Øst")
+                else if (EastList.Count() > 0)
                 {
-                    foreach (EnergyPrice ep in list)
+                    foreach (EnergyPrice epEast in EastList)
                     {
-                        _repo.Add(ep, 2);
+                        _repo.Add(epEast, 2);
                     }
                 }
                 else
                 {
-                    return BadRequest("Invalid zone");
+                    return BadRequest("Something went wrong while getting data from api");
                 }
-                return Ok(list);
+                return Ok();
             }
             catch (Exception e)
             {
@@ -97,7 +87,7 @@ namespace ETrest.Controllers
             try
             {
                 EnergyPrice ep;
-                if (zone == "Vest")
+                if (zone == "West")
                 {
                     ep = _repo.GetByHour(hour, 1);
                     if (ep != null)
@@ -105,7 +95,7 @@ namespace ETrest.Controllers
                         return Ok(ep);
                     }
                 }
-                else if (zone == "Øst")
+                else if (zone == "East")
                 {
                     ep = _repo.GetByHour(hour, 2);
                     if (ep != null)
@@ -125,11 +115,11 @@ namespace ETrest.Controllers
         [HttpGet("All/{zone}")]
         public ActionResult<IEnumerable<EnergyPrice>> Get(string zone)
         {
-            if(zone == "Vest")
+            if(zone == "West")
             {
                 return _repo.GetSavedPrices(1).ToList();
             }
-            else if (zone == "Øst")
+            else if (zone == "East")
             {
                 return _repo.GetSavedPrices(2).ToList();
             }
