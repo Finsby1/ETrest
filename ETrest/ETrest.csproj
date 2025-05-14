@@ -29,7 +29,7 @@
 
     <ItemGroup>
       <Reference Include="ETlib">
-        <HintPath>..\..\Library\ETlib\bin\Debug\net8.0\ETlib.dll</HintPath>
+        <HintPath>..\..\ETLib\ETlib\bin\Debug\net8.0\ETlib.dll</HintPath>
       </Reference>
     </ItemGroup>
 

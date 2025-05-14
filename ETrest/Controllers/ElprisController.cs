@@ -50,15 +50,12 @@ namespace ETrest.Controllers
             {
                 IEnumerable<EnergyPrice>? WestList = await West.Content.ReadFromJsonAsync<IEnumerable<EnergyPrice>>();
                 IEnumerable<EnergyPrice>? EastList = await East.Content.ReadFromJsonAsync<IEnumerable<EnergyPrice>>();
-                if (WestList.Count() > 0)
+                if (WestList.Count() > 0 && EastList.Count() > 0)
                 {
                     foreach (EnergyPrice epWest in WestList)
                     {
                         _repo.Add(epWest, 1);
                     }
-                }
-                else if (EastList.Count() > 0)
-                {
                     foreach (EnergyPrice epEast in EastList)
                     {
                         _repo.Add(epEast, 2);
