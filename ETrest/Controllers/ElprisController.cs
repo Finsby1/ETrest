@@ -37,7 +37,7 @@ namespace ETrest.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [HttpGet("FromAPI")]
-        public async Task<ActionResult<IEnumerable<EnergyPrice>>> GetAllItems()
+        public async Task<ActionResult> GetAllItems()
         {
             _repo.restart();
             HttpResponseMessage West;
