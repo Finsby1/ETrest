@@ -34,7 +34,7 @@ namespace ETrest.Controllers
         }
  
         
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [HttpGet("FromAPI")]
         public async Task<ActionResult> GetAllItems()
