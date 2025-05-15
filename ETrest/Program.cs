@@ -21,7 +21,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddSingleton<EnergyPriceRepository>();
-builder.Services.AddSingleton<PriceIntervalRepository>();
+builder.Services.AddScoped<PriceIntervalRepository>();
 
 var app = builder.Build();
 

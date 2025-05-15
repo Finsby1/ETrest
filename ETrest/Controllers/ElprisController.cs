@@ -133,12 +133,29 @@ namespace ETrest.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [HttpPost]
-        public ActionResult<EnergyPrice> Post([FromBody] PriceInterval ep)
+        public ActionResult<PriceInterval> Post([FromBody] PriceInterval ep)
         {
             try
             {
                 PriceInterval added = _PIrepo.Add(ep);
-                Ok(added);
+                return Ok(added);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+            
+        }
+
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [HttpPut]
+        public ActionResult<PriceInterval> Put([FromBody] PriceInterval ep)
+        {
+            try
+            {
+                PriceInterval updated = _PIrepo.Update(ep);
+                return Ok(updated);
             }
             catch (Exception e)
             {
