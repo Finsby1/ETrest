@@ -14,6 +14,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.5" />
         <PackageReference Include="Microsoft.QualityTools.Testing.Fakes" Version="17.5.0-beta.23060.1" />
         <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.7" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
@@ -29,7 +30,7 @@
 
     <ItemGroup>
       <Reference Include="ETlib">
-        <HintPath>..\..\ETLib\ETlib\bin\Debug\net8.0\ETlib.dll</HintPath>
+        <HintPath>/Users/finsby/Desktop/React1/ETlib/ETlib/ETlib/bin/Debug/net8.0/ETlib.dll</HintPath>
       </Reference>
     </ItemGroup>
 

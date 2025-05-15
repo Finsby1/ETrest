@@ -3,6 +3,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using ETlib;
+using ETlib.Models;
 using ETlib.Repository;
 using Newtonsoft.Json;
 
@@ -12,11 +13,13 @@ namespace ETrest.Controllers
     public class ElprisController : ControllerBase
     {
 
-        private EnergyPriceRepository _repo;
+        private EnergyPriceRepository _EPrepo;
+        private PriceIntervalRepository _PIrepo;
 
-        public ElprisController(EnergyPriceRepository repo)
+        public ElprisController(EnergyPriceRepository ePrepo, PriceIntervalRepository pIrepo)
         {
-            _repo = repo;
+            _EPrepo = ePrepo;
+            _PIrepo = pIrepo;
         }
         
         private static readonly HttpClient client = new HttpClient();
@@ -39,7 +42,7 @@ namespace ETrest.Controllers
         [HttpGet("FromAPI")]
         public async Task<ActionResult> GetAllItems()
         {
-            _repo.restart();
+            _EPrepo.restart();
             HttpResponseMessage West;
             HttpResponseMessage East;
 
@@ -54,11 +57,11 @@ namespace ETrest.Controllers
                 {
                     foreach (EnergyPrice epWest in WestList)
                     {
-                        _repo.Add(epWest, 1);
+                        _EPrepo.Add(epWest, 1);
                     }
                     foreach (EnergyPrice epEast in EastList)
                     {
-                        _repo.Add(epEast, 2);
+                        _EPrepo.Add(epEast, 2);
                     }
                 }
                 else
@@ -86,7 +89,7 @@ namespace ETrest.Controllers
                 EnergyPrice ep;
                 if (zone == "West")
                 {
-                    ep = _repo.GetByHour(hour, 1);
+                    ep = _EPrepo.GetByHour(hour, 1);
                     if (ep != null)
                     {
                         return Ok(ep);
@@ -94,7 +97,7 @@ namespace ETrest.Controllers
                 }
                 else if (zone == "East")
                 {
-                    ep = _repo.GetByHour(hour, 2);
+                    ep = _EPrepo.GetByHour(hour, 2);
                     if (ep != null)
                     {
                         return Ok(ep);
@@ -114,17 +117,34 @@ namespace ETrest.Controllers
         {
             if(zone == "West")
             {
-                return _repo.GetSavedPrices(1).ToList();
+                return _EPrepo.GetSavedPrices(1).ToList();
             }
             else if (zone == "East")
             {
-                return _repo.GetSavedPrices(2).ToList();
+                return _EPrepo.GetSavedPrices(2).ToList();
             }
             else
             {
                 return BadRequest("Invalid zone");
             }
             
+        }
+
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [HttpPost]
+        public ActionResult<EnergyPrice> Post([FromBody] PriceInterval ep)
+        {
+            try
+            {
+                PriceInterval added = _PIrepo.Add(ep);
+                Ok(added);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+            return BadRequest();
         }
         
         

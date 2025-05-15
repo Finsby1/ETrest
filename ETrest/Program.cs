@@ -1,6 +1,10 @@
-using ETlib.Repository;
+using ETlib.Models;using ETlib.Repository;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddDbContext<finsby_dk_db_viberContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddCors(options =>
 {
@@ -16,7 +20,8 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddSingleton<EnergyPriceRepository>(new EnergyPriceRepository());
+builder.Services.AddSingleton<EnergyPriceRepository>();
+builder.Services.AddSingleton<PriceIntervalRepository>();
 
 var app = builder.Build();
 
