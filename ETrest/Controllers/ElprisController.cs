@@ -42,7 +42,7 @@ namespace ETrest.Controllers
         [HttpGet("FromAPI")]
         public async Task<ActionResult> GetAllItems()
         {
-            _EPrepo.restart();
+            _EPrepo.Restart();
             HttpResponseMessage West;
             HttpResponseMessage East;
 
@@ -163,7 +163,12 @@ namespace ETrest.Controllers
             }
             return BadRequest();
         }
-        
+
+        [HttpGet ("{id}")]
+        public PriceInterval GetById(int id)
+        {
+            return _PIrepo.GetById(id);
+        }
         
     }
 }
